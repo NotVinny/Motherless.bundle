@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleIdentifier</key>
+	<string>com.plexapp.plugins.motherless</string>
+	<key>PlexFrameworkVersion</key>
+	<string>2</string>
+	<key>PlexClientPlatforms</key>
+	<string>*</string>
+	<key>PlexPluginDebug</key>
+    <array>
+        <!-- possible values are 0 and 1 -->
+        <!-- Setting it to "1" rather than "0" turns on debug logging -->
+        <string>1</string>
+    </array>
+</dict>
+</plist>

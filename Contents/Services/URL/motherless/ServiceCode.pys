@@ -1,0 +1,52 @@
+RE_VIDEO_URL = Regex("__fileurl = '([^']+)'")
+
+####################################################################################################
+def NormalizeURL(url):
+
+	return url.split('?')[0].rstrip('/')
+
+####################################################################################################
+def MetadataObjectForURL(url):
+
+	html = HTML.ElementFromURL(url)
+
+	title = html.xpath('//title/text()')[0].strip()
+	thumbnail = html.xpath('//meta[@property="og:image"]/@content')[0].strip()
+
+	return VideoClipObject(
+		title = title,
+		summary = title,
+		thumb = Resource.ContentsOfURLWithFallback([thumbnail], fallback='icon-default.jpg'),
+		content_rating = 'X'
+	)
+
+####################################################################################################
+def MediaObjectsForURL(url):
+
+	return [
+		MediaObject(
+			container = Container.MP4,
+			video_codec = VideoCodec.H264,
+			video_resolution = '480',
+			audio_codec = AudioCodec.AAC,
+			audio_channels = 2,
+			optimized_for_streaming = True if Client.Product not in ['Plex Web'] else False,
+			parts = [
+				PartObject(
+					key = Callback(PlayVideo, url=url)
+				)
+			]
+		)
+	]
+
+####################################################################################################
+@indirect
+def PlayVideo(url):
+
+	data = HTTP.Request(url).content
+	video = RE_VIDEO_URL.search(data)
+
+	if video:
+		return IndirectResponse(VideoClipObject, key=video.group(1))
+
+	raise Ex.MediaNotAvailable
