@@ -1,9 +1,14 @@
 import urllib
 import urlparse
+from collections import OrderedDict
 
-MAX_VIDEOS_PER_PAGE = 80
+ML_ROUTE_PREFIX =	'/video/motherless'
 
-@route(ROUTE_PREFIX + '/list')
+ML_BASE_URL =		'http://motherless.com'
+
+ML_MAX_VIDEOS_PER_PAGE =	80
+
+@route(ML_ROUTE_PREFIX + '/list')
 def ListVideos(title, url, page=1):
 	
 	# Create the object to contain all of the videos
@@ -25,10 +30,10 @@ def ListVideos(title, url, page=1):
 		
 		# Check for relative URLs
 		if (videoURL.startswith('/')):
-			videoURL = BASE_URL + videoURL
+			videoURL = ML_BASE_URL + videoURL
 		
 		# Make sure the last step went smoothly (this is probably redundant but oh well)
-		if (videoURL.startswith(BASE_URL)):
+		if (videoURL.startswith(ML_BASE_URL)):
 			# Get the video details
 			thumbnail =	video.xpath("./a/img/@src")[0]
 			videoTitle =	video.xpath("./div[@class='captions']/h2/text()")[0]
@@ -67,8 +72,8 @@ def ListVideos(title, url, page=1):
 			# Add the Video Clip Object to the Object Container
 			oc.add(vco)
 	
-	# There is a slight change that this will break... If the number of videos returned in total is divisible by MAX_VIDEOS_PER_PAGE with no remainder, there could possibly be no additional page after. This is unlikely though and I'm too lazy to handle it.
-	if (len(videos) == MAX_VIDEOS_PER_PAGE):
+	# There is a slight change that this will break... If the number of videos returned in total is divisible by ML_MAX_VIDEOS_PER_PAGE with no remainder, there could possibly be no additional page after. This is unlikely though and I'm too lazy to handle it.
+	if (len(videos) == ML_MAX_VIDEOS_PER_PAGE):
 		oc.add(NextPageObject(
 			key =	Callback(ListVideos, title=title, url=url, page = int(page)+1),
 			title =	'Next Page'

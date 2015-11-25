@@ -1,80 +1,42 @@
 from MLCommon import *
 
-MOST_RECENT_URL =				BASE_URL + '/videos/recent'
-MOST_VIEWED_URL =				BASE_URL + '/videos/viewed'
-MOST_VIEWED_ALL_TIME_URL =		BASE_URL + '/videos/all/viewed'
-MOST_FAVORITED_URL =			BASE_URL + '/videos/favorited'
-MOST_FAVORITED_ALL_TIME_URL =	BASE_URL + '/videos/all/favorited'
-MOST_COMMENTED_URL =			BASE_URL + '/videos/commented'
-MOST_COMMENTED_ALL_TIME_URL =	BASE_URL + '/videos/all/commented'
-POPULAR_URL =					BASE_URL + '/videos/popular'
-LIVE_URL =						BASE_URL + '/live/videos'
-ARCHIVES_URL =					BASE_URL + '/videos/archives'
+ML_MOST_RECENT_URL =			ML_BASE_URL + '/videos/recent'
+ML_MOST_VIEWED_URL =			ML_BASE_URL + '/videos/viewed'
+ML_MOST_VIEWED_ALL_TIME_URL =	ML_BASE_URL + '/videos/all/viewed'
+ML_MOST_FAVORITED_URL =			ML_BASE_URL + '/videos/favorited'
+ML_MOST_FAVORITED_ALL_TIME_URL =	ML_BASE_URL + '/videos/all/favorited'
+ML_MOST_COMMENTED_URL =		ML_BASE_URL + '/videos/commented'
+ML_MOST_COMMENTED_ALL_TIME_URL =	ML_BASE_URL + '/videos/all/commented'
+ML_POPULAR_URL =				ML_BASE_URL + '/videos/popular'
+ML_LIVE_URL =					ML_BASE_URL + '/live/videos'
+ML_ARCHIVES_URL =				ML_BASE_URL + '/videos/archives'
 
-@route(ROUTE_PREFIX + '/browse')
+@route(ML_ROUTE_PREFIX + '/browse')
 def BrowseVideos(title):
 	
 	# Create the object to contain the menu
 	oc = ObjectContainer(title2=title)
 	
-	# Directory Object for Most Recent
-	oc.add(DirectoryObject(
-		key =	Callback(ListVideos, title='Most Recent', url=MOST_RECENT_URL),
-		title =	'Most Recent'
-	))
+	# Create a dictionary of all of the possible sort options and their URLs
+	sortOrders = OrderedDict([
+		('Most Recent',				ML_MOST_RECENT_URL),
+		('Most Viewed',				ML_MOST_VIEWED_URL),
+		('Most Viewed - All Time',	ML_MOST_VIEWED_ALL_TIME_URL),
+		('Most Favorited',			ML_MOST_FAVORITED_URL),
+		('Most Favorited - All Time',	ML_MOST_FAVORITED_ALL_TIME_URL),
+		('Most Commented',			ML_MOST_COMMENTED_URL),
+		('Most Commented - All Time',	ML_MOST_COMMENTED_ALL_TIME_URL),
+		('Popular',				ML_POPULAR_URL),
+		('Live',					ML_LIVE_URL),
+		('Archives',				ML_ARCHIVES_URL)
+	])
 	
-	# Directory Object for Most Viewed
-	oc.add(DirectoryObject(
-		key =	Callback(ListVideos, title='Most Viewed', url=MOST_VIEWED_URL),
-		title =	'Most Viewed'
-	))
-	
-	# Directory Object for Most Viewed - All Time
-	oc.add(DirectoryObject(
-		key =	Callback(ListVideos, title='Most Viewed - All Time', url=MOST_VIEWED_ALL_TIME_URL),
-		title =	'Most Viewed - All Time'
-	))
-	
-	# Directory Object for Most Favorited
-	oc.add(DirectoryObject(
-		key =	Callback(ListVideos, title='Most Favorited', url=MOST_FAVORITED_URL),
-		title =	'Most Favorited'
-	))
-	
-	# Directory Object for Most Favorited - All Time
-	oc.add(DirectoryObject(
-		key =	Callback(ListVideos, title='Most Favorited - All Time', url=MOST_FAVORITED_ALL_TIME_URL),
-		title =	'Most Favorited - All Time'
-	))
-	
-	# Directory Object for Most Commented
-	oc.add(DirectoryObject(
-		key =	Callback(ListVideos, title='Most Commented', url=MOST_COMMENTED_URL),
-		title =	'Most Commented'
-	))
-	
-	# Directory Object for Most Commented - All Time
-	oc.add(DirectoryObject(
-		key =	Callback(ListVideos, title='Most Commented - All Time', url=MOST_COMMENTED_ALL_TIME_URL),
-		title =	'Most Commented - All Time'
-	))
-	
-	# Directory Object for Popular
-	oc.add(DirectoryObject(
-		key =	Callback(ListVideos, title='Popular', url=POPULAR_URL),
-		title =	'Popular'
-	))
-	
-	# Directory Object for Live
-	oc.add(DirectoryObject(
-		key =	Callback(ListVideos, title='Live', url=LIVE_URL),
-		title =	'Live'
-	))
-	
-	# Directory Object for Archives
-	oc.add(DirectoryObject(
-		key =	Callback(ListVideos, title='Archives', url=ARCHIVES_URL),
-		title =	'Archives'
-	))
+	# Loop through all of the sort orders
+	for sortOrder, sortURL in sortOrders.items():
+		# Add a Directory Object for the sort order
+		oc.add(DirectoryObject(
+			key =	Callback(ListVideos, title=sortOrder, url=sortURL),
+			title =	sortOrder
+		))
 	
 	return oc
