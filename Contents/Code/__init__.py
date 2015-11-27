@@ -1,5 +1,4 @@
 from MLCommon import *
-from MLBrowseVideos import *
 from MLGroups import *
 from MLTags import *
 from MLMembers import *
@@ -27,33 +26,13 @@ def Start():
 @handler(ML_ROUTE_PREFIX, CHANNEL_NAME, thumb=DEFAULT_ICON, art=DEFAULT_ART)
 def MainMenu():
 	
-	# Create the object to contain the main menu options
-	oc = ObjectContainer()
+	# Create a dictionary of menu items
+	mainMenuItems = OrderedDict([
+		('Browse All Videos',	{'function':BrowseVideos}),
+		('Groups',				{'function':BrowseGroups}),
+		('Tags',				{'function':ListTags}),
+		('Members',			{'function':BrowseMembers}),
+		('Search',				{'function':SearchTags, 'search':True, 'directoryObjectArgs':{'prompt':'Search for...','summary':'Enter Search Terms'}})
+	])
 	
-	# TODO: Use some data structure to make this into a loop... A simple dictionary won't do, will need to ponder this. First change to be made for v1.3
-	
-	# Directory Object for Browse All Videos
-	oc.add(DirectoryObject(
-		key =	Callback(BrowseVideos, title='Browse All Videos'),
-		title =	'Browse All Videos'
-	))
-	
-	# Directory Object for Groups
-	oc.add(DirectoryObject(
-		key =	Callback(BrowseGroups, title='Groups'),
-		title =	'Groups'
-	))
-	
-	# Directory Object for Tags
-	oc.add(DirectoryObject(
-		key =	Callback(BrowseTags, title='Tags'),
-		title =	'Tags'
-	))
-	
-	# Directory Object for Members
-	oc.add(DirectoryObject(
-		key =	Callback(BrowseMembers, title='Members'),
-		title =	'Members'
-	))
-	
-	return oc
+	return GenerateMenu(CHANNEL_NAME, mainMenuItems)

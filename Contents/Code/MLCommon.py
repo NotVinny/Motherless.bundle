@@ -8,7 +8,26 @@ ML_BASE_URL =		'http://motherless.com'
 
 ML_MAX_VIDEOS_PER_PAGE =	80
 
-@route(ML_ROUTE_PREFIX + '/list')
+@route(ML_ROUTE_PREFIX + '/videos/browse')
+def BrowseVideos(title):
+	
+	# Create a dictionary of menu items
+	browseVideosMenuItems = OrderedDict([
+		('Most Recent',				{'function':ListVideos, 'functionArgs':{'url':ML_BASE_URL + '/videos/recent'}}),
+		('Most Viewed',				{'function':ListVideos, 'functionArgs':{'url':ML_BASE_URL + '/videos/viewed'}}),
+		('Most Viewed - All Time',	{'function':ListVideos, 'functionArgs':{'url':ML_BASE_URL + '/videos/all/viewed'}}),
+		('Most Favorited',			{'function':ListVideos, 'functionArgs':{'url':ML_BASE_URL + '/videos/favorited'}}),
+		('Most Favorited - All Time',	{'function':ListVideos, 'functionArgs':{'url':ML_BASE_URL + '/videos/all/favorited'}}),
+		('Most Commented',			{'function':ListVideos, 'functionArgs':{'url':ML_BASE_URL + '/videos/commented'}}),
+		('Most Commented - All Time',	{'function':ListVideos, 'functionArgs':{'url':ML_BASE_URL + '/videos/all/commented'}}),
+		('Popular',				{'function':ListVideos, 'functionArgs':{'url':ML_BASE_URL + '/videos/popular'}}),
+		('Live',					{'function':ListVideos, 'functionArgs':{'url':ML_BASE_URL + '/live/videos'}}),
+		('Archives',				{'function':ListVideos, 'functionArgs':{'url':ML_BASE_URL + '/videos/archives'}}),
+	])
+	
+	return GenerateMenu(title, browseVideosMenuItems)
+
+@route(ML_ROUTE_PREFIX + '/videos/list')
 def ListVideos(title, url, page=1):
 	
 	# Create the object to contain all of the videos
@@ -79,6 +98,45 @@ def ListVideos(title, url, page=1):
 			title =	'Next Page'
 		))
 
+	return oc
+
+def GenerateMenu(title, menuItems):
+	# Create the object to contain the menu items
+	oc = ObjectContainer(title2=title)
+	
+	# Loop through the menuItems dictionary
+	for menuTitle, menuData in menuItems.items():
+		# Create empty dictionaries to hold the arguments for the Directory Object and the Function
+		directoryObjectArgs =	{}
+		functionArgs =		{}
+		
+		# See if any Directory Object arguments are present in the menu data
+		if ('directoryObjectArgs' in menuData):
+			# Merge dictionaries
+			directoryObjectArgs.update(menuData['directoryObjectArgs'])
+		
+		# Check to see if the menu item is a search menu item
+		if ('search' in menuData and menuData['search'] == True):
+			directoryObject = InputDirectoryObject(title=menuTitle, **directoryObjectArgs)
+		# Check to see if the menu item is a next page item
+		elif ('nextPage' in menuData and menuData['nextPage'] == True):
+			directoryObject = NextPageObject(title=menuTitle, **directoryObjectArgs)
+		# Otherwise, use a basic Directory Object
+		else:
+			directoryObject = DirectoryObject(title=menuTitle, **directoryObjectArgs)
+			functionArgs['title'] = menuTitle
+		
+		# See if any Function arguments are present in the menu data
+		if ('functionArgs' in menuData):
+			# Merge dictionaries
+			functionArgs.update(menuData['functionArgs'])
+		
+		# Set the Directory Object key to the function from the menu data, passing along any additional function arguments
+		directoryObject.key =	Callback(menuData['function'], **functionArgs)
+		
+		# Add the Directory Object to the Object Container
+		oc.add(directoryObject)
+	
 	return oc
 
 # I stole this function from http://stackoverflow.com/questions/2506379/add-params-to-given-url-in-python. It works.

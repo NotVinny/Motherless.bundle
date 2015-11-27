@@ -10,76 +10,32 @@ ML_MAX_GROUPS_PER_PAGE =	20
 @route(ML_ROUTE_PREFIX + '/groups')
 def BrowseGroups(title, url=ML_GROUPS_URL):
 	
-	# Create the object to contain all of the group categories
-	oc = ObjectContainer(title2=title)
-	
-	# Add a search input
-	oc.add(InputDirectoryObject(
-		key =		Callback(SearchGroups, title='Search Results'),
-		title =		"Search Groups",
-		prompt =		"Search for...",
-		summary =	"Enter Group Search Term"
-	))
+	# Create a dictionary of menu items
+	browseGroupsMenuItems = OrderedDict([
+		('Search Groups', {'function':SearchGroups, 'search':True, 'directoryObjectArgs':{'prompt':'Search for...','summary':"Enter Group Search Term"}})
+	])
 	
 	# Get the HTML of the page
 	html = HTML.ElementFromURL(url)
 	
 	# Use xPath to extract a list of group catgegories
-	groupCategories = html.xpath("id('group-categories')/ul/li/a")
+	groupCategories = html.xpath("id('group-categories')/ul/li/a/text()")
 	
 	# Loop through all group categories
 	for groupCategory in groupCategories:
 		# Get the group category text
-		groupCategoryTitle = groupCategory.xpath("./text()")[0].strip()
+		groupCategoryTitle = groupCategory.strip()
 		
-		# Add a Directory Object for the group category
-		oc.add(DirectoryObject(
-			key =	Callback(SortGroups, title=groupCategoryTitle, groupCategory=groupCategoryTitle),
-			title =	groupCategoryTitle
-		))
+		# Add a menu item for the group category
+		browseGroupsMenuItems[groupCategoryTitle] = {'function':SortGroups, 'functionArgs':{'groupCategory':groupCategoryTitle}}
 	
-	return oc
-
-@route(ML_ROUTE_PREFIX + '/groups/search')
-def SearchGroups(query, title):
-	
-	# Format the query for use in Motherless' search
-	formattedQuery = formatStringForSearch(query, "+")
-	
-	try:
-		return ListGroups(title='Search Results For: ' + query, url=ML_GROUP_SEARCH_URL % formattedQuery)
-	except:
-		return ObjectContainer(header='Search Results', message="No search results found", no_cache=True)
-
-@route(ML_ROUTE_PREFIX + '/groups/sort')
-def SortGroups(title, groupCategory):
-	
-	# Create the object to contain all of the sorting options
-	oc = ObjectContainer(title2=title)
-	
-	# Create a dictionary of sort options
-	sortOrders = OrderedDict([
-		('All Groups',		'u'),
-		('Most Uploads',	'n'),
-		('Most Posts',		'f'),
-		('Recently Created',	'r')
-	])
-	
-	# Loop through all of the sort options
-	for sortOrder, sortOrderFlag in sortOrders.items():
-		# Create a Directory Object for the sort option
-		oc.add(DirectoryObject(
-			key =	Callback(ListGroups, title=groupCategory + ": " + sortOrder, url=ML_GROUP_SORT_URL % (sortOrderFlag, groupCategory)),
-			title =	sortOrder
-		))
-	
-	return oc
+	return GenerateMenu(title, browseGroupsMenuItems)
 
 @route(ML_ROUTE_PREFIX + '/groups/list')
 def ListGroups(title, url, page=1):
 	
-	#Create the object to contain all of the groups
-	oc = ObjectContainer(title2=title)
+	# Create a dictionary of menu items
+	listGroupsMenuItems = OrderedDict()
 	
 	#Add the page number into the query string
 	pagedURL = addURLParamaters(url, {'page':str(page)})
@@ -93,22 +49,39 @@ def ListGroups(title, url, page=1):
 	# Loop through all the groups
 	for group in groups:
 		# Get the details of the group
+		groupTitle =		group.xpath("./h1/a/text()")[0].strip()
 		groupURL =			ML_GROUP_VIDEO_URL % group.xpath("./h1/a/@href")[0].split('/')[-1]
 		groupThumbnail =	group.xpath("./div[@class='group-bio-avatar']/a/div/img/@src")[0]
-		groupTitle =		group.xpath("./h1/a/text()")[0].strip()
 		
-		# Add a Directory Object for the group
-		oc.add(DirectoryObject(
-			key =	Callback(ListVideos, title=groupTitle, url=groupURL),
-			title =	groupTitle,
-			thumb =	groupThumbnail
-		))
+		# Add a menu item for the group
+		listGroupsMenuItems[groupTitle] = {'function':ListVideos, 'functionArgs':{'url':groupURL}, 'directoryObjectArgs':{'thumb':groupThumbnail}}
 	
 	# There is a slight change that this will break... If the number of groups returned in total is divisible by ML_MAX_GROUPS_PER_PAGE with no remainder, there could possibly be no additional page after. This is unlikely though and I'm too lazy to handle it.
 	if (len(groups) == ML_MAX_GROUPS_PER_PAGE):
-		oc.add(NextPageObject(
-			key =	Callback(ListGroups, title=title, url=url, page = int(page)+1),
-			title =	'Next Page'
-		))
+		listGroupsMenuItems['Next Page'] = {'function':ListGroups, 'functionArgs':{'title':title, 'url':url, 'page':int(page)+1}, 'nextPage':True}
 	
-	return oc
+	return GenerateMenu(title, listGroupsMenuItems)
+
+@route(ML_ROUTE_PREFIX + '/groups/search')
+def SearchGroups(query):
+	
+	# Format the query for use in Motherless' search
+	formattedQuery = formatStringForSearch(query, "+")
+	
+	try:
+		return ListGroups(title='Search Results For: ' + query, url=ML_GROUP_SEARCH_URL % formattedQuery)
+	except:
+		return ObjectContainer(header='Search Results', message="No search results found", no_cache=True)
+
+@route(ML_ROUTE_PREFIX + '/groups/sort')
+def SortGroups(title, groupCategory):
+	
+	# Create a dictionary of menu items
+	sortGroupsMenuItems = OrderedDict([
+		('All Groups',		{'function':ListGroups, 'functionArgs':{'title':groupCategory + ' - All Groups',		'url':ML_GROUP_SORT_URL % ('u', groupCategory)}}),
+		('Most Uploads',	{'function':ListGroups, 'functionArgs':{'title':groupCategory + ' - Most Uploads',		'url':ML_GROUP_SORT_URL % ('n', groupCategory)}}),
+		('Most Posts',		{'function':ListGroups, 'functionArgs':{'title':groupCategory + ' - Most Posts',		'url':ML_GROUP_SORT_URL % ('f', groupCategory)}}),
+		('Recently Created',	{'function':ListGroups, 'functionArgs':{'title':groupCategory + ' - Recently Created',	'url':ML_GROUP_SORT_URL % ('r', groupCategory)}})
+	])
+	
+	return GenerateMenu(title, sortGroupsMenuItems)
