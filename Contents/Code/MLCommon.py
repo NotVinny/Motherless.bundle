@@ -100,9 +100,9 @@ def ListVideos(title, url, page=1):
 
 	return oc
 
-def GenerateMenu(title, menuItems):
+def GenerateMenu(title, menuItems, no_cache=False):
 	# Create the object to contain the menu items
-	oc = ObjectContainer(title2=title)
+	oc = ObjectContainer(title2=title, no_cache=no_cache)
 	
 	# Loop through the menuItems dictionary
 	for menuTitle, menuData in menuItems.items():

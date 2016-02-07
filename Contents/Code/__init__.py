@@ -5,8 +5,8 @@ from MLMembers import *
 
 CHANNEL_NAME =	'Motherless'
 
-DEFAULT_ART =		'art-default.jpg'
-DEFAULT_ICON =		'icon-default.jpg'
+DEFAULT_ART =		'art-' + Prefs["channelBackgroundArt"]
+DEFAULT_ICON =		'icon-' + Prefs["channelIconArt"]
 
 def Start():
 	
@@ -23,6 +23,13 @@ def Start():
 	# Set the user agent
 	HTTP.Headers['User-Agent'] = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/600.2.3 (KHTML, like Gecko) Version/8.0.1 Safari/600.2.3'
 
+def ValidatePrefs():
+	DEFAULT_ART =		'art-' + Prefs["channelBackgroundArt"]
+	ObjectContainer.art =		R(DEFAULT_ART)
+	
+	DEFAULT_ICON =		'icon-' + Prefs["channelIconArt"]
+	DirectoryObject.thumb =	R(DEFAULT_ICON)
+
 @handler(ML_ROUTE_PREFIX, CHANNEL_NAME, thumb=DEFAULT_ICON, art=DEFAULT_ART)
 def MainMenu():
 	
@@ -35,4 +42,10 @@ def MainMenu():
 		('Search',				{'function':SearchTags, 'search':True, 'directoryObjectArgs':{'prompt':'Search for...','summary':'Enter Search Terms'}})
 	])
 	
-	return GenerateMenu(CHANNEL_NAME, mainMenuItems)
+	oc = GenerateMenu(CHANNEL_NAME, mainMenuItems)
+	
+	oc.add(PrefsObject(
+		title="Preferences"
+	))
+	
+	return oc
