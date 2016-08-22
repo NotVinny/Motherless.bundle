@@ -48,12 +48,12 @@ def ListVideos(title, url, page=1):
 		# Make sure the last step went smoothly (this is probably redundant but oh well)
 		if (video['url'].startswith(ML_BASE_URL)):
 			
-			# Create a Video Clip Object for the video
-			oc.add(VideoClipObject(
-				title =		video['title'],
-				url =		video['url'],
-				thumb =		video['thumbnail'],
-				duration =	video['duration']
+			# Add a Directory Object for the video to the Object Container
+			oc.add(DirectoryObject(
+				key =	Callback(VideoMenu, url=video["url"], title=video["title"], duration=video["duration"]),
+				title =	video["title"],
+				thumb =	video["thumbnail"],
+				duration =	video["duration"]
 			))
 	
 	# There is a slight change that this will break... If the number of videos returned in total is divisible by ML_MAX_VIDEOS_PER_PAGE with no remainder, there could possibly be no additional page after. This is unlikely though and I'm too lazy to handle it.
@@ -63,6 +63,28 @@ def ListVideos(title, url, page=1):
 			title =	'Next Page'
 		))
 
+	return oc
+
+@route(ML_ROUTE_PREFIX + '/videos/menu')
+def VideoMenu(url, title='Video Menu', duration=0):
+	# Create the object to contain all of the videos options
+	oc = ObjectContainer(title2 = title, no_cache=True)
+	
+	# Create the Video Clip Object
+	vco =	URLService.MetadataObjectForURL(url)
+	
+	# As I am calling MetadataObjectForURL from the URL Service, it only returns the metadata, it doesn't contain the URL
+	vco.url =	url
+	
+	# Overide the title
+	vco.title =	"Play Video"
+	
+	if (int(duration) > 0):
+		vco.duration = int(duration)
+	
+	# Add the Video Clip Object
+	oc.add(vco)
+	
 	return oc
 
 def GenerateMenu(title, menuItems, no_cache=False):
