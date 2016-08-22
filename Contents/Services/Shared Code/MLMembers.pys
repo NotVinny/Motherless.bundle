@@ -1,0 +1,20 @@
+def GetMembers(url):
+	# Create an empty list to hold the members
+	members = []
+	
+	# Get the HTML of the page
+	html = HTML.ElementFromURL(url)
+	
+	# Use xPath to extract a list of members
+	memberElements = html.xpath("//table[@class='thumbs-members']//tr")
+	
+	# Loop through all members
+	for memberElement in memberElements:
+		# Use xPath to extract member details, and add the member to the list
+		members.append({
+			'username':		memberElement.xpath("./td[@class='thumb-member-info ellipsis']/div[@class='thumb-member-username']/a/text()")[0].strip(),
+			'url':			memberElement.xpath("./td[@class='thumb-member-info ellipsis']/div[@class='thumb-member-username']/a/@href")[0],
+			'thumbnail':	memberElement.xpath("./td[@class='thumb-member-avatar']/a/img/@src")[0]
+		})
+	
+	return members

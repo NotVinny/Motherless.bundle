@@ -15,19 +15,13 @@ def BrowseGroups(title, url=ML_GROUPS_URL):
 		('Search Groups', {'function':SearchGroups, 'search':True, 'directoryObjectArgs':{'prompt':'Search for...','summary':"Enter Group Search Term"}})
 	])
 	
-	# Get the HTML of the page
-	html = HTML.ElementFromURL(url)
-	
-	# Use xPath to extract a list of group catgegories
-	groupCategories = html.xpath("id('group-categories')/ul/li/a/text()")
+	# Get list of group categories
+	groupCategories = SharedCodeService.MLGroups.GetGroupCategories(url)
 	
 	# Loop through all group categories
 	for groupCategory in groupCategories:
-		# Get the group category text
-		groupCategoryTitle = groupCategory.strip()
-		
 		# Add a menu item for the group category
-		browseGroupsMenuItems[groupCategoryTitle] = {'function':SortGroups, 'functionArgs':{'groupCategory':groupCategoryTitle}}
+		browseGroupsMenuItems[groupCategory['title']] = {'function':SortGroups, 'functionArgs':{'groupCategory':groupCategory['title']}}
 	
 	return GenerateMenu(title, browseGroupsMenuItems)
 
@@ -40,21 +34,17 @@ def ListGroups(title, url, page=1):
 	#Add the page number into the query string
 	pagedURL = addURLParamaters(url, {'page':str(page)})
 	
-	# Get the HTML of the page
-	html = HTML.ElementFromURL(pagedURL)
-	
-	# Use xPath to extract a list of groups
-	groups = html.xpath("//div[@class='group-bio']")
+	# Get list of groups
+	groups = SharedCodeService.MLGroups.GetGroups(pagedURL)
 	
 	# Loop through all the groups
 	for group in groups:
-		# Get the details of the group
-		groupTitle =		group.xpath("./h1/a/text()")[0].strip()
-		groupURL =			ML_GROUP_VIDEO_URL % group.xpath("./h1/a/@href")[0].split('/')[-1]
-		groupThumbnail =	group.xpath("./div[@class='group-bio-avatar']/a/div/img/@src")[0]
-		
 		# Add a menu item for the group
-		listGroupsMenuItems[groupTitle] = {'function':ListVideos, 'functionArgs':{'url':groupURL}, 'directoryObjectArgs':{'thumb':groupThumbnail}}
+		listGroupsMenuItems[group['title']] = {
+			'function':				ListVideos,
+			'functionArgs':			{'url': ML_GROUP_VIDEO_URL % group['url']},
+			'directoryObjectArgs':	{'thumb': group['thumbnail']}
+		}
 	
 	# There is a slight change that this will break... If the number of groups returned in total is divisible by ML_MAX_GROUPS_PER_PAGE with no remainder, there could possibly be no additional page after. This is unlikely though and I'm too lazy to handle it.
 	if (len(groups) == ML_MAX_GROUPS_PER_PAGE):

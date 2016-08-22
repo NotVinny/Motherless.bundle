@@ -34,21 +34,17 @@ def ListMembers(title, url=ML_MEMBERS_URL, page=1):
 	# Add the page number into the query string
 	pagedURL = addURLParamaters(url, {'page':str(page)})
 	
-	# Get the HTML of the page
-	html = HTML.ElementFromURL(pagedURL)
-	
-	# Use xPath to extract a list of members
-	members = html.xpath("//table[@class='thumbs-members']//tr")
+	# Get list of members
+	members = SharedCodeService.MLMembers.GetMembers(pagedURL)
 	
 	# Loop through all the members
 	for member in members:
-		# Get the member details
-		memberUsername =	member.xpath("./td[@class='thumb-member-info ellipsis']/div[@class='thumb-member-username']/a/text()")[0].strip()
-		memberURL =		ML_BASE_URL + member.xpath("./td[@class='thumb-member-info ellipsis']/div[@class='thumb-member-username']/a/@href")[0]
-		memberThumbnail =	member.xpath("./td[@class='thumb-member-avatar']/a/img/@src")[0]
-		
 		# Add a menu item for the member
-		listMembersMenuItems[memberUsername] = {'function':MemberMenu, 'functionArgs':{'url':memberURL,'username':memberUsername}, 'directoryObjectArgs':{'thumb':memberThumbnail}}
+		listMembersMenuItems[member['username']] = {
+			'function':				MemberMenu,
+			'functionArgs':			{'url':ML_BASE_URL + member['url'],'username':member['username']},
+			'directoryObjectArgs':	{'thumb':member['thumbnail']}
+		}
 	
 	# There is a slight change that this will break... If the number of members returned in total is divisible by ML_MAX_MEMBERS_PER_PAGE with no remainder, there could possibly be no additional page after. This is unlikely though and I'm too lazy to handle it.
 	if (len(members) == ML_MAX_MEMBERS_PER_PAGE):
