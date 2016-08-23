@@ -6,6 +6,8 @@ ML_ROUTE_PREFIX =	'/video/motherless'
 
 ML_BASE_URL =		'http://motherless.com'
 
+ML_FAVORITED_URL =	ML_BASE_URL + '/H%s'
+
 ML_MAX_VIDEOS_PER_PAGE =	80
 
 @route(ML_ROUTE_PREFIX + '/videos/browse')
@@ -102,6 +104,13 @@ def VideoMenu(url, title='Video Menu', duration=0):
 			title =			"Tiled Thumbnails",
 			thumb =			videoThumbnailTileURL
 		))
+		
+		if (SharedCodeService.MLCommon.DetectFavoritedVideos(videoID)):
+			oc.add(DirectoryObject(
+				key =		Callback(ListVideos, title='Favorited Videos', url=ML_FAVORITED_URL % videoID),
+				title =		'Favorited Videos',
+				summary =	'People that favorited this video also favorited these'
+			))
 	
 	return oc
 

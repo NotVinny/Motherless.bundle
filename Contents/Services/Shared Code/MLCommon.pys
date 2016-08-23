@@ -1,6 +1,8 @@
 ML_THUMBNAIL_SERVICE =			'http://motherless.com' + '/view/vtt?codename=%s'
 ML_THUMBNAIL_SERVICE_REGEX =	Regex('(http:\/\/\S+.jpg)')
 
+ML_FAVORITED_SERVICE =			'http://motherless.com' + '/view/jumplinks?codename=%s'
+
 def GetVideos(url):
 	# Create an empty list to hold the videos
 	videos = []
@@ -58,3 +60,11 @@ def GetVideoThumbnails(videoID):
 		return thumbnailURL.group(1)
 	else:
 		return None
+
+def DetectFavoritedVideos(videoID):
+	# Get the HTML of the page
+	html = HTML.ElementFromURL(ML_FAVORITED_SERVICE % videoID)
+	
+	favoritedVideos = html.xpath("//div[@class='media-linked'][@data-action='Favorites']")
+	
+	return (len(favoritedVideos) > 0)
