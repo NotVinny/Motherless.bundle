@@ -1,3 +1,6 @@
+ML_THUMBNAIL_SERVICE =			'http://motherless.com' + '/view/vtt?codename=%s'
+ML_THUMBNAIL_SERVICE_REGEX =	Regex('(http:\/\/\S+.jpg)')
+
 def GetVideos(url):
 	# Create an empty list to hold the videos
 	videos = []
@@ -44,3 +47,14 @@ def GetVideos(url):
 		videos.append(video)
 	
 	return videos
+
+def GetVideoThumbnails(videoID):
+	# Get the HTML of the page
+	html = HTML.StringFromElement(HTML.ElementFromURL(ML_THUMBNAIL_SERVICE % videoID))
+	
+	thumbnailURL = ML_THUMBNAIL_SERVICE_REGEX.search(html)
+	
+	if (thumbnailURL):
+		return thumbnailURL.group(1)
+	else:
+		return None

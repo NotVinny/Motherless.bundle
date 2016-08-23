@@ -85,6 +85,24 @@ def VideoMenu(url, title='Video Menu', duration=0):
 	# Add the Video Clip Object
 	oc.add(vco)
 	
+	# Get the HTML of the site
+	html =		HTML.ElementFromURL(url)
+	
+	# Use xPath to extract the videoID
+	videoID = html.xpath("//input[@name='codename']/@value")
+	
+	if (len(videoID) > 0):
+		videoID =	videoID[0]
+		
+		videoThumbnailTileURL = SharedCodeService.MLCommon.GetVideoThumbnails(videoID)
+		
+		oc.add(PhotoObject(
+			key =			videoThumbnailTileURL,
+			rating_key =	videoThumbnailTileURL,
+			title =			"Tiled Thumbnails",
+			thumb =			videoThumbnailTileURL
+		))
+	
 	return oc
 
 def GenerateMenu(title, menuItems, no_cache=False):
