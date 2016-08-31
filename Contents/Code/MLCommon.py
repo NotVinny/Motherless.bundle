@@ -101,8 +101,7 @@ def VideoMenu(url, title='Video Menu', duration=0):
 		oc.add(PhotoObject(
 			key =			videoThumbnailTileURL,
 			rating_key =	videoThumbnailTileURL,
-			title =			"Tiled Thumbnails",
-			thumb =			videoThumbnailTileURL
+			title =			"Tiled Thumbnails"
 		))
 		
 		if (SharedCodeService.MLCommon.DetectFavoritedVideos(videoID)):
