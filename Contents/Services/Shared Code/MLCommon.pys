@@ -1,7 +1,7 @@
-ML_THUMBNAIL_SERVICE =			'http://motherless.com' + '/view/vtt?codename=%s'
-ML_THUMBNAIL_SERVICE_REGEX =	Regex('(http:\/\/\S+.jpg)')
+ML_THUMBNAIL_SERVICE =			'https://motherless.com' + '/view/vtt?codename=%s'
+ML_THUMBNAIL_SERVICE_REGEX =	Regex('(https:\/\/\S+.jpg)')
 
-ML_FAVORITED_SERVICE =			'http://motherless.com' + '/view/jumplinks?codename=%s'
+ML_FAVORITED_SERVICE =			'https://motherless.com' + '/view/jumplinks?codename=%s'
 
 def GetVideos(url):
 	# Create an empty list to hold the videos

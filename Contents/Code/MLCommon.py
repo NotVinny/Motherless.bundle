@@ -4,7 +4,7 @@ from collections import OrderedDict
 
 ML_ROUTE_PREFIX =	'/video/motherless'
 
-ML_BASE_URL =		'http://motherless.com'
+ML_BASE_URL =		'https://motherless.com'
 
 ML_FAVORITED_URL =	ML_BASE_URL + '/H%s'
 

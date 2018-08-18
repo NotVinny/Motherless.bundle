@@ -8,8 +8,8 @@
 		<dict>
 			<key>URLPatterns</key>
 			<array>
-				<string>^http://([^.]+.)?motherlessmedia\.com/.+</string>
-				<string>^http://([^.]+.)?motherless\.com/.+</string>
+				<string>^https://([^.]+.)?motherlessmedia\.com/.+</string>
+				<string>^https://([^.]+.)?motherless\.com/.+</string>
 			</array>
 		</dict>
 	</dict>
