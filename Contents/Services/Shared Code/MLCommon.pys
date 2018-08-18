@@ -19,7 +19,7 @@ def GetVideos(url):
 		video = {
 			'title':		videoElement.xpath("./div[@class='captions']/h2/text()")[0],
 			'url':			videoElement.xpath("./a/@href")[0],
-			'thumbnail':	videoElement.xpath("./a/img/@src")[0]
+			'thumbnail':	videoElement.xpath("./a/img[@class='static']/@src")[0]
 		}
 		
 		# Get the duration of the video
