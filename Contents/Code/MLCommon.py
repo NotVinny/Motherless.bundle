@@ -6,6 +6,8 @@ ML_ROUTE_PREFIX =	'/video/motherless'
 
 ML_BASE_URL =		'http://motherless.com'
 
+ML_FAVORITED_URL =	ML_BASE_URL + '/H%s'
+
 ML_MAX_VIDEOS_PER_PAGE =	80
 
 @route(ML_ROUTE_PREFIX + '/videos/browse')
@@ -36,60 +38,25 @@ def ListVideos(title, url, page=1):
 	# Add the page number into the query string
 	pagedURL = addURLParamaters(url, {'page':str(page)})
 	
-	# Get the HTML of the site
-	html = HTML.ElementFromURL(pagedURL)
-	
-	# Use xPath to extract a list of divs that contain videos
-	videos = html.xpath("//div[@class='thumb video medium']")
+	# Get list of videos
+	videos = SharedCodeService.MLCommon.GetVideos(pagedURL)
 	
 	# Loop through the videos in the page
 	for video in videos:
-		# Get the link of the video
-		videoURL = video.xpath("./a/@href")[0]
-		
 		# Check for relative URLs
-		if (videoURL.startswith('/')):
-			videoURL = ML_BASE_URL + videoURL
+		if (video['url'].startswith('/')):
+			video['url'] = ML_BASE_URL + video['url']
 		
 		# Make sure the last step went smoothly (this is probably redundant but oh well)
-		if (videoURL.startswith(ML_BASE_URL)):
-			# Get the video details
-			thumbnail =	video.xpath("./a/img/@src")[0]
-			videoTitle =	video.xpath("./div[@class='captions']/h2/text()")[0]
+		if (video['url'].startswith(ML_BASE_URL)):
 			
-			# Create a Video Clip Object for the video
-			vco = VideoClipObject(
-				url =	videoURL,
-				title =	videoTitle,
-				thumb =	thumbnail
-			)
-			
-			# Get the duration of the video
-			durationString =	video.xpath("./div[@class='captions']/div[@class='caption left']/text()")[0]
-			
-			# Split it into a list separated by colon
-			durationArray =	durationString.split(":")
-			
-			if (len(durationArray) == 2):
-				# Dealing with MM:SS
-				minutes =	int(durationArray[0])
-				seconds =	int(durationArray[1])
-				
-				vco.duration = (minutes*60 + seconds) * 1000
-				
-			elif (len(durationArray) == 3):
-				# Dealing with HH:MM:SS
-				hours =		int(durationArray[0])
-				minutes =	int(durationArray[1])
-				seconds =	int(durationArray[2])
-				
-				vco.duration = (hours*3600 + minutes * 60 + seconds) * 1000
-			else:
-				# WTF
-				pass
-			
-			# Add the Video Clip Object to the Object Container
-			oc.add(vco)
+			# Add a Directory Object for the video to the Object Container
+			oc.add(DirectoryObject(
+				key =	Callback(VideoMenu, url=video["url"], title=video["title"], duration=video["duration"]),
+				title =	video["title"],
+				thumb =	video["thumbnail"],
+				duration =	video["duration"]
+			))
 	
 	# There is a slight change that this will break... If the number of videos returned in total is divisible by ML_MAX_VIDEOS_PER_PAGE with no remainder, there could possibly be no additional page after. This is unlikely though and I'm too lazy to handle it.
 	if (len(videos) == ML_MAX_VIDEOS_PER_PAGE):
@@ -98,6 +65,52 @@ def ListVideos(title, url, page=1):
 			title =	'Next Page'
 		))
 
+	return oc
+
+@route(ML_ROUTE_PREFIX + '/videos/menu')
+def VideoMenu(url, title='Video Menu', duration=0):
+	# Create the object to contain all of the videos options
+	oc = ObjectContainer(title2 = title, no_cache=True)
+	
+	# Create the Video Clip Object
+	vco =	URLService.MetadataObjectForURL(url)
+	
+	# As I am calling MetadataObjectForURL from the URL Service, it only returns the metadata, it doesn't contain the URL
+	vco.url =	url
+	
+	# Overide the title
+	vco.title =	"Play Video"
+	
+	if (int(duration) > 0):
+		vco.duration = int(duration)
+	
+	# Add the Video Clip Object
+	oc.add(vco)
+	
+	# Get the HTML of the site
+	html =		HTML.ElementFromURL(url)
+	
+	# Use xPath to extract the videoID
+	videoID = html.xpath("//input[@name='codename']/@value")
+	
+	if (len(videoID) > 0):
+		videoID =	videoID[0]
+		
+		videoThumbnailTileURL = SharedCodeService.MLCommon.GetVideoThumbnails(videoID)
+		
+		oc.add(PhotoObject(
+			key =			videoThumbnailTileURL,
+			rating_key =	videoThumbnailTileURL,
+			title =			"Tiled Thumbnails"
+		))
+		
+		if (SharedCodeService.MLCommon.DetectFavoritedVideos(videoID)):
+			oc.add(DirectoryObject(
+				key =		Callback(ListVideos, title='Favorited Videos', url=ML_FAVORITED_URL % videoID),
+				title =		'Favorited Videos',
+				summary =	'People that favorited this video also favorited these'
+			))
+	
 	return oc
 
 def GenerateMenu(title, menuItems, no_cache=False):

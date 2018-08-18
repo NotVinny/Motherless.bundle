@@ -1,0 +1,39 @@
+def GetGroupCategories(url):
+	# Create an empty list to hold the group categories
+	groupCategories = []
+	
+	# Get the HTML of the page
+	html = HTML.ElementFromURL(url)
+	
+	# Use xPath to extract a list of group catgegories
+	groupCategoryElements = html.xpath("id('group-categories')/ul/li/a/text()")
+	
+	# Loop through all group categories
+	for groupCategoryElement in groupCategoryElements:
+		# Get the group category text
+		groupCategories.append({
+			'title': groupCategoryElement.strip()
+		})
+	
+	return groupCategories
+
+def GetGroups(url):
+	# Create an empty list to hold the groups
+	groups = []
+	
+	# Get the HTML of the page
+	html = HTML.ElementFromURL(url)
+	
+	# Use xPath to extract a list of groups
+	groupElements = html.xpath("//div[@class='group-bio']")
+	
+	# Loop through all groups
+	for groupElement in groupElements:
+		# Use xPath to extract group details, and add the group to the list
+		groups.append({
+			'title':		groupElement.xpath("./h1/a/text()")[0].strip(),
+			'url':		groupElement.xpath("./h1/a/@href")[0].split('/')[-1],
+			'thumbnail':	groupElement.xpath("./div[@class='group-bio-avatar']/a/div/img/@src")[0]
+		})
+	
+	return groups

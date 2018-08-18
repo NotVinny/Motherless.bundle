@@ -1,0 +1,18 @@
+def GetTags(url):
+	# Create an empty list to hold the tags
+	tags = []
+	
+	# Get the HTML of the page
+	html = HTML.ElementFromURL(url)
+	
+	# Use xPath to extract a list of tags
+	tagElements= html.xpath("//div[@id='content']/div/div[not(@class='header')]/a/@href")
+	
+	# Loop through all tags
+	for tagElement in tagElements:
+		# Use xPath to extract tag details, and add the tag to the list
+		tags.append({
+			'title':		tagElement.split('/')[-1]
+		})
+	
+	return tags

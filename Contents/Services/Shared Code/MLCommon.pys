@@ -1,0 +1,70 @@
+ML_THUMBNAIL_SERVICE =			'http://motherless.com' + '/view/vtt?codename=%s'
+ML_THUMBNAIL_SERVICE_REGEX =	Regex('(http:\/\/\S+.jpg)')
+
+ML_FAVORITED_SERVICE =			'http://motherless.com' + '/view/jumplinks?codename=%s'
+
+def GetVideos(url):
+	# Create an empty list to hold the videos
+	videos = []
+	
+	# Get the HTML of the page
+	html = HTML.ElementFromURL(url)
+	
+	# Use xPath to extract a list of videos
+	videoElements = html.xpath("//div[@class='thumb video medium']")
+	
+	# Loop through all videos
+	for videoElement in videoElements:
+		# Use xPath to extract video details
+		video = {
+			'title':		videoElement.xpath("./div[@class='captions']/h2/text()")[0],
+			'url':			videoElement.xpath("./a/@href")[0],
+			'thumbnail':	videoElement.xpath("./a/img/@src")[0]
+		}
+		
+		# Get the duration of the video
+		durationString =	videoElement.xpath("./div[@class='captions']/div[@class='caption left']/text()")[0]
+		
+		# Split it into a list separated by colon
+		durationArray =	durationString.split(":")
+		
+		if (len(durationArray) == 2):
+			# Dealing with MM:SS
+			minutes =	int(durationArray[0])
+			seconds =	int(durationArray[1])
+			
+			video["duration"] = (minutes*60 + seconds) * 1000
+			
+		elif (len(durationArray) == 3):
+			# Dealing with HH:MM:SS
+			hours =		int(durationArray[0])
+			minutes =	int(durationArray[1])
+			seconds =	int(durationArray[2])
+			
+			video["duration"] = (hours*3600 + minutes * 60 + seconds) * 1000
+		else:
+			# Set a default duration of 0
+			video["duration"] = 0
+		
+		videos.append(video)
+	
+	return videos
+
+def GetVideoThumbnails(videoID):
+	# Get the HTML of the page
+	html = HTML.StringFromElement(HTML.ElementFromURL(ML_THUMBNAIL_SERVICE % videoID))
+	
+	thumbnailURL = ML_THUMBNAIL_SERVICE_REGEX.search(html)
+	
+	if (thumbnailURL):
+		return thumbnailURL.group(1)
+	else:
+		return None
+
+def DetectFavoritedVideos(videoID):
+	# Get the HTML of the page
+	html = HTML.ElementFromURL(ML_FAVORITED_SERVICE % videoID)
+	
+	favoritedVideos = html.xpath("//div[@class='media-linked'][@data-action='Favorites']")
+	
+	return (len(favoritedVideos) > 0)
