@@ -8,7 +8,7 @@ ML_BASE_URL =		'https://motherless.com'
 
 ML_FAVORITED_URL =	ML_BASE_URL + '/H%s'
 
-ML_MAX_VIDEOS_PER_PAGE =	80
+ML_MAX_VIDEOS_PER_PAGE =	60
 
 @route(ML_ROUTE_PREFIX + '/videos/browse')
 def BrowseVideos(title):
